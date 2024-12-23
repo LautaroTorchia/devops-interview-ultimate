@@ -19,7 +19,8 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t my-nginx:latest .
+          cd ejercicio3/
+          docker build -t ejercicio3-nginx:latest .
 
   security:
     runs-on: ubuntu-latest
@@ -31,8 +32,8 @@ jobs:
 
       - name: Scan Docker image for vulnerabilities with Trivy
         run: |
-          docker pull my-nginx:latest  # Aseguramos que la imagen esté disponible
-          trivy image --exit-code 1 --severity HIGH,CRITICAL my-nginx:latest || true  # El pipeline falla si hay vulnerabilidades críticas o altas
+          docker pull ejercicio3-nginx:latest  # Aseguramos que la imagen esté disponible
+          trivy image --exit-code 1 --severity HIGH,CRITICAL ejercicio3-nginx:latest || true  # El pipeline falla si hay vulnerabilidades críticas o altas
 
   push_image:
     runs-on: ubuntu-latest
@@ -47,8 +48,8 @@ jobs:
 
       - name: Push Docker Image to DockerHub
         run: |
-          docker tag my-nginx:latest <your-dockerhub-username>/my-nginx:latest
-          docker push <your-dockerhub-username>/my-nginx:latest
+          docker tag ejercicio3-nginx:latest lautarotorchia/ejercicio3-nginx:latest
+          docker push lautarotorchia/ejercicio3-nginx:latest
 
   deploy:
     runs-on: ubuntu-latest
