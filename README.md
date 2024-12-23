@@ -41,6 +41,6 @@ herramienta de CI de su elección para implementar el entregable
 ## Resoluciones
 Para ver resoluciones, visita las carpetas de cada respectivo ejercicio:
 
-- [Ejercicio1](./Ejercicio1)
-- [Ejercicio2](./Ejercicio2)
-- [Ejercicio3](./Ejercicio3)
+- [Ejercicio1](./ejercicio1)
+- [Ejercicio2](./ejercicio2)
+- [Ejercicio3](./ejercicio3)
