@@ -1,52 +1,46 @@
-# Despliegue de Aplicación Django (Backend)
+# Resolucion Prueba tecnica DevOps Craftech
 
-## Estructura del Proyecto
+### Nivel esperado: *Semi Senior*
 
-La estructura de carpetas y archivos para el backend es la siguiente:
+Repositorio que contiene la resolucion de la prueba tecnica de DevOps en Craftech, enunciado:
 
-```
-backend/
-├── src/                  # Código fuente de la aplicación Django
-├── config/
-│   ├── dev/              # Configuración para desarrollo
-│   │   ├── Dockerfile
-│   │   ├── .env
-│   │   ├── entrypoint.sh
-│   │   ├── requirements.txt
-│   ├── prod/             # Configuración para producción
-│       ├── Dockerfile
-│       ├── .env
-│       ├── entrypoint.sh
-│       ├── requirements.txt
-docker-compose.yml    # docker compose para levantar el stack completo local
-```
+- Prueba 1 - Diagrama de Red Produzca un diagrama de red (puede utilizar
+lucidchart) de una aplicación web en GCP o AWS y escriba una descripción de
+texto de 1/2 a 1 página de sus elecciones y arquitectura.
+El diseño debe soportar:
+• Cargas variables
+• Contar con HA (alta disponibilidad)
+• Frontend en Js
+• Backend con una base de datos relacional y una no relacional
+• La aplicación backend consume 2 microservicios externos
+El diagrama debe hacer un mejor uso de las soluciones distribuidas.
 
----
-## Instrucciones para desplegar el servicio localmente en desarrollo
+- Prueba 2 - Despliegue de una aplicación Django y React.js Elaborar
+el deployment dockerizado de una aplicación en django (backend) con frontend
+en React.js contenida en el repositorio. Es necesario desplegar todos los servicios
+en un solo docker-compose. Se deben entregar los Dockerfiles pertinentes para elaborar el despliegue y jus-
+tificar la forma en la que elabora el deployment (supervisor, scripts, docker-
+compose, kubernetes, etc) Subir todo lo elaborado a un repositorio (github, gitlab, bitbucket, etc). En el
+repositorio se debe incluir el código de la aplicación y un archivo README.md
+con instrucciones detalladas para compilar y desplegar la aplicación, tanto en
+una PC local como en la nube (AWS o GCP).
 
-1. Crear un archivo `.env` en `backend/config/dev/` con las variables necesarias (puedes usar `.env.postgres` como referencia).
-
-2. Levantar los servicios:
-
-   ```bash
-   docker-compose up -d --build
-   ```
-
-3. Acceder al backend:
-
-   - La aplicación estará disponible en: [http://localhost:8000](http://localhost:8000)
-   - La base de datos PostgreSQL estará corriendo en el puerto `5432`.
-
----
-## Porque de las elecciones de despliegue?
-
-Las elecciones de tener la carpeta `config/` con las configuraciones tanto de `dev/` como de `prod/` es para poder definir claramente 2 configuraciones para el microservicio, la configuracion de desarrollo, que podria contar con *fast-reload*, debugging tools y otras herramientas de desarrollo, y la configuracion de produccion, que sera levantada cuando se productivice la aplicacion o cuando se levante en un ambiente cloud, el cual esta pensado para deployearse no con docker-compose.yml sino con otro formato
-
--------
-
-
-# Despliegue de React.js (Frontend)
-
-*Pendiente: Esta sección será completada una vez que el frontend esté configurado.*
+- Prueba 3 - CI/CD Dockerizar un nginx con el index.html default. Elab-
+orar un pipeline que ante cada cambio realizado sobre el index.html buildee 
+la nueva imagen y la actualize en la plataforma elegida. (docker-compose,
+swarm, kuberenetes, etc.) Para la creacion del CI/CD se puede utilizar cualquier
+plataforma (CircleCI, Gitlab, Github, Bitbucket.)
+Requisitos y deseables:
+La solución al ejercicio debe mostrarnos que usted puede:
+Automatizar la parte del proceso de despliegue. usar conceptos de CI para apro-
+visionar el software necesario para que los entregables se ejecuten use cualquier
+herramienta de CI de su elección para implementar el entregable
 
 ---
+
+## Resoluciones
+Para ver resoluciones, visita las carpetas de cada respectivo ejercicio:
+
+- [Ejercicio1](./Ejercicio1)
+- [Ejercicio2](./Ejercicio2)
+- [Ejercicio3](./Ejercicio3)
