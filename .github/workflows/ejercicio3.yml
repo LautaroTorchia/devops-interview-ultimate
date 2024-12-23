@@ -49,8 +49,8 @@ jobs:
 
       - name: Scan Docker image for vulnerabilities with Trivy
         run: |
-          docker pull ejercicio3-nginx:latest  # Aseguramos que la imagen esté disponible
-          trivy image --exit-code 1 --severity HIGH,CRITICAL ejercicio3-nginx:latest || true  # El pipeline falla si hay vulnerabilidades críticas o altas
+          docker pull lautarotorchia/ejercicio3-nginx:latest  # Aseguramos que la imagen esté disponible
+          trivy image --exit-code 1 --severity HIGH,CRITICAL lautarotorchia/ejercicio3-nginx:latest || true  # El pipeline falla si hay vulnerabilidades críticas o altas
 
   deploy:
     runs-on: ubuntu-latest
