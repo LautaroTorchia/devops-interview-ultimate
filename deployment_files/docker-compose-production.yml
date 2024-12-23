@@ -1,9 +1,9 @@
 services:
   backend:
     build:
-      context: backend/
+      context: ../backend/
       dockerfile: config/prod/Dockerfile
-    env_file: ./backend/config/prod/.env.postgres
+    env_file: ../backend/config/prod/.env.postgres
     depends_on:
       - db
     ports:
@@ -11,16 +11,15 @@ services:
 
   frontend:
     build:
-      context: frontend/
+      context: ../frontend/
       dockerfile: config/prod/Dockerfile
     ports:
-    #  - "3000:3000" 
       - "80:80"
 
   db:
     container_name: database
     image: postgres:12.0-alpine
-    env_file: ./backend/config/dev/.env.postgres
+    env_file: ../backend/config/dev/.env.postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:

@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    app: frontend
+spec:
+  replicas: 2  
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: lautarotorchia/frontend-js-craftech:1.0.3
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "1000m" 
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"  
+        env:
+        - name: REACT_APP_API_SERVER
+          value: "http://prueba-craftech.com/api/"
+
