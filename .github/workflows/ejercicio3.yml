@@ -105,26 +105,7 @@ jobs:
           cd ejercicio3
           docker compose up -d --remove-orphans
 
-      - name: Get Public IP Address
-        id: public-ip
-        run: |
-          INSTANCE_IP=$(gcloud compute instances describe ${{ secrets.GCP_INSTANCE_NAME }} --zone=us-central1-c --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
-          echo "INSTANCE_IP=$INSTANCE_IP" >> $GITHUB_ENV
-
       - name: Verify Deployment
         run: |
           sleep 10
           curl -s http://$INSTANCE_IP:80 | grep "Bienvenidos a Nginx"
-
-      - name: Log Public URL
-        run: |
-          echo "Application deployed and accessible at: http://$INSTANCE_IP"
-
-      - name: Post Public IP to GitHub UI
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const instanceIP = process.env.INSTANCE_IP;
-            core.summary.addHeading('Deployment Successful');
-            core.summary.addLink(`Access your deployment at: http://${instanceIP}`, `http://${instanceIP}`);
-            await core.summary.write();
