@@ -33,7 +33,7 @@ jobs:
 
       - name: Trivy Security Scan
         run: |
-          docker run --rm -v $(pwd):/project aquasec/trivy:latest fs /project --exit-code 1 --severity HIGH,CRITICAL || true
+          docker run --rm -v $(pwd):/project aquasec/trivy:latest fs /project/ejercicio3 --exit-code 1 --severity HIGH,CRITICAL || true
 
   build-and-push-container:
     runs-on: ubuntu-22.04
@@ -64,11 +64,6 @@ jobs:
           docker tag $DOCKER_IMAGE_NAME:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/$DOCKER_IMAGE_NAME:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/$DOCKER_IMAGE_NAME:latest
 
-  deploy-container:
-    runs-on: [self-hosted]
-    needs: build-and-push-container
-    steps:
-
       - name: Start GCP VM
         run: |
           gcloud compute instances start ${{ secrets.GCP_INSTANCE_NAME }} --zone=$GCP_ZONE
@@ -78,6 +73,11 @@ jobs:
               echo "Waiting for VM..."
               sleep 5
           done
+
+  deploy-container:
+    runs-on: [self-hosted]
+    needs: build-and-push-container
+    steps:
 
       - name: Deploy to Docker Compose
         run: |
@@ -94,4 +94,4 @@ jobs:
 
       - name: Add Deployment Link to GitHub UI
         run: |
-          echo "::notice title=Deployment Successful::🌐 Your application is live at: [http://${{ env.PUBLIC_IP }}](http://${{ env.PUBLIC_IP }})"
+          echo "::notice title=Deployment Successful::The application is live at: http://${{ env.PUBLIC_IP }}"

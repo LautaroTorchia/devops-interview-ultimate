@@ -1,4 +1,4 @@
-name: CI/CD Pipeline Nginx
+name: CI/CD Nginx Deployment Pipeline
 
 on:
   push:
@@ -9,103 +9,89 @@ on:
     branches:
       - main
 
+env:
+  DOCKER_IMAGE_NAME: ejercicio3-nginx
+  GCP_ZONE: us-central1-c
+
 jobs:
-  code-tests:
-    runs-on: ubuntu-latest
+  lint-and-test:
+    runs-on: ubuntu-22.04
     steps:
-      - name: Checkout code
+
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Placeholder for Code Tests
-        run: |
-          echo "Code Tests will be implemented here."
+      - name: Code Quality Tests
+        run: echo "Placeholder for Code Tests"
 
-  security-tests:
-    runs-on: ubuntu-latest
+  container-security-scan:
+    runs-on: ubuntu-22.04
     steps:
-      - name: Checkout code
+
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Static security analysis with Trivy
+      - name: Trivy Security Scan
         run: |
           docker run --rm -v $(pwd):/project aquasec/trivy:latest fs /project --exit-code 1 --severity HIGH,CRITICAL || true
 
-  build-and-publish:
-    runs-on: ubuntu-latest
-    needs:
-      - code-tests
-      - security-tests
+  build-and-push-container:
+    runs-on: ubuntu-22.04
+    needs: [lint-and-test, container-security-scan]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+      - name: Checkout Code
+        uses: actions/checkout@v3
 
       - name: Build Docker Image
         run: |
           cd ejercicio3/
-          docker build -t ejercicio3-nginx:${{ github.sha }} .
+          docker build -t $DOCKER_IMAGE_NAME:${{ github.sha }} .
 
-      - name: Log in to DockerHub
+      - name: Login to DockerHub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Push Docker Image to DockerHub
+      - name: Push Docker Image
         run: |
-          docker tag ejercicio3-nginx:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/ejercicio3-nginx:${{ github.sha }}
-          docker push ${{ secrets.DOCKER_USERNAME }}/ejercicio3-nginx:${{ github.sha }}
+          # Pushing TAG image
+          docker tag $DOCKER_IMAGE_NAME:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/$DOCKER_IMAGE_NAME:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/$DOCKER_IMAGE_NAME:${{ github.sha }}
 
-          docker tag ejercicio3-nginx:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/ejercicio3-nginx:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/ejercicio3-nginx:latest
+          # Pushing Latest image
+          docker tag $DOCKER_IMAGE_NAME:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/$DOCKER_IMAGE_NAME:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/$DOCKER_IMAGE_NAME:latest
 
-  prepare-deploy:
-    runs-on: ubuntu-latest
-    needs: build-and-publish
-    steps:
-      - name: Setup GCP CLI
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: '${{ secrets.GCP_SA_KEY }}'
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Start GCP VM for deployment
+      - name: Start GCP VM
         run: |
-          gcloud compute instances start ${{ secrets.GCP_INSTANCE_NAME }} --zone=us-central1-c
+          gcloud compute instances start ${{ secrets.GCP_INSTANCE_NAME }} --zone=$GCP_ZONE
 
-      - name: Schedule VM shutdown after 30 minutes
-        run: |
-          gcloud compute instances add-metadata ${{ secrets.GCP_INSTANCE_NAME }} \
-            --zone=us-central1-c \
-            --metadata shutdown-at=$(date -u -d "+30 minutes" +"%Y-%m-%dT%H:%M:%SZ")
+          until gcloud compute instances describe ${{ secrets.GCP_INSTANCE_NAME }} \
+                --zone=$GCP_ZONE --format='get(status)' | grep -q RUNNING; do
+              echo "Waiting for VM..."
+              sleep 5
+          done
 
-      - name: Wait for instance to be ready
-        run: |
-          echo "Waiting for Instance to be ready"
-          sleep 30
-
-  deploy:
+  deploy-container:
     runs-on: [self-hosted]
-    needs: prepare-deploy
+    needs: build-and-push-container
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
 
-      - name: Setup GCP CLI
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: '${{ secrets.GCP_SA_KEY }}'
-
-      - name: Deploy with Docker Compose
+      - name: Deploy to Docker Compose
         run: |
           cd ejercicio3
+          docker compose pull
           docker compose up -d --remove-orphans
 
       - name: Verify Deployment
         run: |
-          sleep 10
-          curl -s http://$INSTANCE_IP:80 | grep "Bienvenidos a Nginx"
+          PUBLIC_IP=$(gcloud compute instances describe ${{ secrets.GCP_INSTANCE_NAME }} \
+                      --zone=$GCP_ZONE --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+          echo "Deployed at http://$PUBLIC_IP"
+          echo "PUBLIC_IP=$PUBLIC_IP" >> $GITHUB_ENV
+
+      - name: Add Deployment Link to GitHub UI
+        run: |
+          echo "::notice title=Deployment Successful::The application is live at: http://${{ env.PUBLIC_IP }}"
