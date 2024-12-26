@@ -28,7 +28,7 @@ jobs:
 
       - name: Test Dockerfile security with Conftest
         run: |
-          docker run --rm openpolicyagent/conftest test --policy opa-docker-security.rego ejercicio3/Dockerfile
+          docker run --rm $(pwd)/ejercicio3:/project openpolicyagent/conftest test --policy opa-docker-security.rego ejercicio3/Dockerfile
 
       - name: Static security analysis with Trivy
         run: |
