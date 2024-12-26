@@ -1,6 +1,3 @@
-# docker-compose.yml
-version: '3.8'
-
 services:
   web:
     image: lautarotorchia/ejercicio3-nginx:latest

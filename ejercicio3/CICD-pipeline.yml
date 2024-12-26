@@ -1,15 +1,40 @@
-name: CI/CD Pipeline for Nginx with DevSecOps
+name: CI/CD Pipeline Nginx
 
 on:
   push:
     paths:
       - "ejercicio3/index.html"
       - "ejercicio3/Dockerfile"
+      - "ejercicio3/docker-compose.yml"
     branches:
       - main
+
 jobs:
-  build:
+  code-tests:
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Placeholder for Code Tests
+        run: |
+          echo "Code Tests will be implemented here."
+
+  security-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Static security analysis with Trivy
+        run: |
+          docker run --rm -v $(pwd):/project aquasec/trivy:latest fs /project --exit-code 1 --severity HIGH,CRITICAL || true
+
+  build-and-publish:
+    runs-on: ubuntu-latest
+    needs:
+      - code-tests
+      - security-tests
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -19,26 +44,9 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t my-nginx:latest .
+          cd ejercicio3/
+          docker build -t ejercicio3-nginx:${{ github.sha }} .
 
-  security:
-    runs-on: ubuntu-latest
-    needs: build 
-    steps:
-
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Scan Docker image for vulnerabilities with Trivy
-        run: |
-          docker pull my-nginx:latest  # Aseguramos que la imagen esté disponible
-          trivy image --exit-code 1 --severity HIGH,CRITICAL my-nginx:latest || true  # El pipeline falla si hay vulnerabilidades críticas o altas
-
-  push_image:
-    runs-on: ubuntu-latest
-    needs: security  
-    steps:
-      # 1. Login en DockerHub
       - name: Log in to DockerHub
         uses: docker/login-action@v2
         with:
@@ -47,22 +55,57 @@ jobs:
 
       - name: Push Docker Image to DockerHub
         run: |
-          docker tag my-nginx:latest <your-dockerhub-username>/my-nginx:latest
-          docker push <your-dockerhub-username>/my-nginx:latest
+          docker tag ejercicio3-nginx:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/ejercicio3-nginx:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/ejercicio3-nginx:${{ github.sha }}
+
+          docker tag ejercicio3-nginx:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/ejercicio3-nginx:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/ejercicio3-nginx:latest
+
+  prepare-deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-publish
+    steps:
+      - name: Setup GCP CLI
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Start GCP VM for deployment
+        run: |
+          gcloud compute instances start ${{ secrets.GCP_INSTANCE_NAME }} --zone=us-central1-c
+
+      - name: Schedule VM shutdown after 30 minutes
+        run: |
+          gcloud compute instances add-metadata ${{ secrets.GCP_INSTANCE_NAME }} \
+            --zone=us-central1-c \
+            --metadata shutdown-at=$(date -u -d "+30 minutes" +"%Y-%m-%dT%H:%M:%SZ")
+
+      - name: Wait for instance to be ready
+        run: |
+          echo "Waiting for Instance to be ready"
+          sleep 30
 
   deploy:
-    runs-on: ubuntu-latest
-    needs: push_image 
+    runs-on: [self-hosted]
+    needs: prepare-deploy
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup GCP CLI
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
       - name: Deploy with Docker Compose
         run: |
-          # Navigate to the directory containing docker-compose.yml
           cd ejercicio3
-          docker-compose up -d
+          docker compose up -d --remove-orphans
 
       - name: Verify Deployment
         run: |
-          # Assuming the Nginx service is running on port 80
-          echo "Checking if the service is running..."
-          curl -s http://localhost:80 | grep "Bienvenidos a Nginx"
+          sleep 10
+          curl -s http://$INSTANCE_IP:80 | grep "Bienvenidos a Nginx"
