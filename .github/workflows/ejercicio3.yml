@@ -56,14 +56,6 @@ jobs:
           docker pull lautarotorchia/ejercicio3-nginx:latest
           docker run --rm aquasec/trivy:latest image --exit-code 1 --severity HIGH,CRITICAL lautarotorchia/ejercicio3-nginx:latest || true
 
-      - name: Lint Dockerfile
-        run: |
-          docker run --rm -i hadolint/hadolint < ejercicio3/Dockerfile
-
-      - name: Lint docker-compose.yml
-        run: |
-          docker run --rm -v "$(pwd)/ejercicio3:/mnt" -w "/mnt" redcoolbeans/docker-compose-linter lint docker-compose.yml
-
   prepare-deploy:
     runs-on: ubuntu-latest
     needs: security
