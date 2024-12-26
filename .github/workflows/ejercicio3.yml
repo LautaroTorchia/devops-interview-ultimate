@@ -119,7 +119,7 @@ jobs:
       - name: Verify Deployment
         run: |
           echo "Verifying deployment at http://${{ env.PUBLIC_IP }}"
-          curl -s http://${{ env.PUBLIC_IP }} | grep "Bienvenidos a Nginx"
+          curl -s http://${{ env.PUBLIC_IP }} | grep "Welcome to Nginx"
 
       - name: Add Deployment Link to GitHub UI
         run: |
