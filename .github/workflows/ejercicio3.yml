@@ -90,7 +90,8 @@ jobs:
           PUBLIC_IP=$(gcloud compute instances describe ${{ secrets.GCP_INSTANCE_NAME }} \
                       --zone=$GCP_ZONE --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
           echo "Deployed at http://$PUBLIC_IP"
+          echo "PUBLIC_IP=$PUBLIC_IP" >> $GITHUB_ENV
 
       - name: Add Deployment Link to GitHub UI
         run: |
-          echo "::notice title=Deployment URL::Deployed! Visit: [http://${{ env.PUBLIC_IP }}](http://${{ env.PUBLIC_IP }})"
+          echo "::notice title=Deployment Successful::🌐 Your application is live at: [http://${{ env.PUBLIC_IP }}](http://${{ env.PUBLIC_IP }})"
