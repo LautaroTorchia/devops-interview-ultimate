@@ -77,16 +77,16 @@ jobs:
         run: |
           gcloud compute instances start ${{ secrets.GCP_INSTANCE_NAME }} --zone=us-central1-c
 
-      - name: Schedule VM shutdown after 30 minutes
-        run: |
-          gcloud compute instances add-metadata ${{ secrets.GCP_INSTANCE_NAME }} \
-            --zone=us-central1-c \
-            --metadata shutdown-at=$(date -u -d "+30 minutes" +"%Y-%m-%dT%H:%M:%SZ")
-
       - name: Wait for instance to be ready
         run: |
           echo "Waiting for Instance to be ready"
           sleep 30
+
+      - name: Schedule VM Shutdown
+        run: |
+          gcloud compute ssh ${{ secrets.GCP_INSTANCE_NAME }} \
+          --zone=us-central1-c \
+          --command="echo 'sudo shutdown -h now' | at now + 30 minutes"
 
   deploy:
     runs-on: [self-hosted]
