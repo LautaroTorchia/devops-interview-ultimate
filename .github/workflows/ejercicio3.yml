@@ -107,7 +107,21 @@ jobs:
           docker compose pull
           docker compose up -d --remove-orphans
 
+      - name: Get Public IP Address
+        id: get-ip
+        run: |
+          PUBLIC_IP=$(gcloud compute instances describe ${{ secrets.GCP_INSTANCE_NAME }} \
+            --zone=us-central1-c \
+            --format='get(networkInterfaces[0].accessConfigs[0].natIP)')
+          echo "PUBLIC_IP=$PUBLIC_IP" >> $GITHUB_ENV
+          echo "Public IP Address: $PUBLIC_IP"
+
       - name: Verify Deployment
         run: |
-          sleep 10
-          curl -s http://localhost:80 | grep "Bienvenidos a Nginx"
+          echo "Verifying deployment at http://${{ env.PUBLIC_IP }}"
+          curl -s http://${{ env.PUBLIC_IP }} | grep "Bienvenidos a Nginx"
+
+      - name: Add Deployment Link to GitHub UI
+        run: |
+          echo "Deployed! Visit: http://${{ env.PUBLIC_IP }}"
+          echo "::notice title=Deployment URL::Deployed! Visit: [http://${{ env.PUBLIC_IP }}](http://${{ env.PUBLIC_IP }})"
