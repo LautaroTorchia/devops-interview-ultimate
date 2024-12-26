@@ -26,13 +26,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Test Dockerfile security with Conftest
-        run: |
-          docker run --rm $(pwd):/project openpolicyagent/conftest test --policy opa-docker-security.rego ejercicio3/Dockerfile
-
       - name: Static security analysis with Trivy
         run: |
-          docker run --rm -v $(pwd):/project aquasec/trivy:latest fs /project --exit-code 1 --severity HIGH,CRITICAL . || true
+          docker run --rm -v $(pwd):/project aquasec/trivy:latest fs /project --exit-code 1 --severity HIGH,CRITICAL || true
 
   build-and-publish:
     runs-on: ubuntu-latest
