@@ -11,7 +11,7 @@ on:
 
 jobs:
   code-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -21,7 +21,7 @@ jobs:
           echo "Code Tests will be implemented here."
 
   security-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -31,7 +31,7 @@ jobs:
           docker run --rm -v $(pwd):/project aquasec/trivy:latest fs /project --exit-code 1 --severity HIGH,CRITICAL || true
 
   build-and-publish:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs:
       - code-tests
       - security-tests
@@ -62,7 +62,7 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/ejercicio3-nginx:latest
 
   prepare-deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: build-and-publish
     steps:
       - name: Setup GCP CLI
@@ -123,5 +123,4 @@ jobs:
 
       - name: Add Deployment Link to GitHub UI
         run: |
-          echo "Deployed! Visit: http://${{ env.PUBLIC_IP }}"
           echo "::notice title=Deployment URL::Deployed! Visit: [http://${{ env.PUBLIC_IP }}](http://${{ env.PUBLIC_IP }})"
