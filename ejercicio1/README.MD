@@ -1,4 +1,4 @@
-# Arquitectura para Aplicación Web Escalable y Alta Disponibilidad
+# Guia de Arquitectura para Aplicación Web Escalable y Alta Disponibilidad, Ejercicio 1 Prueba Técnica
 
 ## Enunciado
 
