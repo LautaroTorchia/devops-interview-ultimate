@@ -66,20 +66,12 @@ El pipeline está organizado en las siguientes etapas:
 
 ---
 
-## Tecnologías y Herramientas Utilizadas
-
-- **Docker**: Creación y gestión del contenedor de Nginx.
-- **Docker Compose**: Orquestación del despliegue de la aplicación.
-- **GitHub Actions**: Plataforma para la definición y ejecución del pipeline CI/CD.
-- **Trivy**: Herramienta para escaneo de seguridad de contenedores.
-- **Google Cloud Platform (GCP)**: Entorno de despliegue final.
-
----
 
 ## Razón de Diseño del Pipeline
 
 1. **Idempotencia**: Cada etapa es independiente e idempotente, para asegurar su correcto funcionamiento siempre, como tambien mantener las etapas bien definidas.
 2. **Seguridad**: Integración de un escaneo de seguridad para garantizar la calidad de las imágenes Docker.
+3. **Buenas Practicas**: Buenas practicas para el desarrollo de un pipeline CI/CD separado en etapas, escalable y con ocultamiento de secretos o informacion privilegiada.
 
 ---
 
