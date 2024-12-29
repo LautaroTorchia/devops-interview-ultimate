@@ -92,7 +92,11 @@ jobs:
     runs-on: [self-hosted]
     needs: prepare-deployment
     steps:
-
+      - name: Setup GCP CLI
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
+          
       - name: Deploy to Docker Compose
         run: |
           cd ejercicio3
