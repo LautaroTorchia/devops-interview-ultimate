@@ -23,7 +23,7 @@ Este documento describe en detalle el diseño de una arquitectura distribuida pa
 ## 1. **Visión General del Diagrama**
 
 El diagrama representa:
-- Un balanceador HTTP(S) para gestionar el tráfico público.
+- Un Load Balancer HTTP(S) para gestionar el tráfico público.
 - Kubernetes Engine (GKE) para ejecutar servicios de frontend y backend.
 - Bases de datos gestionadas para garantizar rendimiento y HA.
 - Redes privadas y firewalls para aislamiento y seguridad.
@@ -98,9 +98,9 @@ El diagrama representa:
 
 ## 3. **Flujo del Tráfico**
 
-1. El usuario accede al dominio registrado en **Cloud DNS**, que resuelve al balanceador HTTP(S).
-2. El balanceador distribuye las solicitudes al frontend en GKE.
-3. El frontend realiza llamadas al backend mediante el balanceador interno.
+1. El usuario accede al dominio registrado en **Cloud DNS**, que resuelve al Load Balancer HTTP(S).
+2. El Load Balancer distribuye las solicitudes al frontend en GKE.
+3. El frontend realiza llamadas al backend mediante el Load Balancer interno.
 4. El backend interactúa con bases de datos (Cloud SQL y Firestore) y microservicios externos a través de Istio y Cloud NAT.
 
 ---
